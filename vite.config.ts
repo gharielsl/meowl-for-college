@@ -5,6 +5,8 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    root: './client',
+    publicDir: '../public',
     plugins: [vue(), tailwindcss()],
     resolve: {
       alias: {
@@ -15,5 +17,9 @@ export default defineConfig(() => {
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
+    build: {
+      outDir: "../dist",
+      emptyOutDir: true,
+    }
   };
 });
