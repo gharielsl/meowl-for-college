@@ -103,7 +103,7 @@ async function sendMessage() {
         // happiness 0-4 bad, 5-10 good
         const loveChange = happiness - 5;
 
-        props.cat.love = Math.max(0, props.cat.love + loveChange);
+        props.cat.love = Math.max(0, props.cat.love + loveChange * 2);
 
         messages.value.push({
             id: msgId++,

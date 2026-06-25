@@ -213,7 +213,7 @@ function eatCat(cat: Cat) {
   saveData.catsEaten++;
   let souls = 1 + (cat?.love || 0);
   if (cat?.name === 'ינשול')
-    souls *= 2; // meowls are worth more
+    souls = Math.floor(souls / 2); // meowls are more precious
   saveData.catsSouls += souls;
 }
 

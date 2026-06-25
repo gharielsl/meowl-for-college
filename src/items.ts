@@ -7,28 +7,28 @@ const items: Item[] = [
         img: './item_dry_food.png',
         stacking: true,
         saveDataIndex: 0,
-        loveTransform: (love: number) => love + 1 + Math.floor(love * 0.01)
+        loveTransform: (love: number) => love + 3 + Math.floor(love * 0.01 * 1.1)
     },
     {
         name: 'Cookie',
         img: './item_cookie.png',
         stacking: true,
         saveDataIndex: 1,
-        loveTransform: (love: number) => love + 15 + Math.floor(love * 0.025)
+        loveTransform: (love: number) => love + 15 + Math.floor(love * 0.025 * 1.6)
     },
     {
         name: 'Wet Food',
         img: './item_wet_food.png',
         stacking: true,
         saveDataIndex: 2,
-        loveTransform: (love: number) => love + 50 + Math.floor(love * 0.05)
+        loveTransform: (love: number) => love + 50 + Math.floor(love * 0.05 * 1.8)
     },
     {
         name: 'Fish',
         img: './item_fish.png',
         stacking: true,
         saveDataIndex: 3,
-        loveTransform: (love: number) => love + 500 + Math.floor(love * 0.08)
+        loveTransform: (love: number) => love + 500 + Math.floor(love * 0.08 * 2)
     },
 
     // unlockable items
