@@ -1,4 +1,4 @@
-import saveData from "./save-data";
+import { saveData } from "./save-data";
 
 const items: Item[] = [
     // stacking items

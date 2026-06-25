@@ -9,30 +9,54 @@ export function formatNumber(num: number): string {
     return formatted.replace(/\.?0+$/, '') + suffix;
 }
 
-// load or create default data
-export function loadData() {
-    // json fields
-    let loadToyUnlocks: any = localStorage.getItem('toyUnlocks');
-    let loadItems: any = localStorage.getItem('items');
-    let loadCats: any = localStorage.getItem('cats');
-    if (loadToyUnlocks) loadToyUnlocks = JSON.parse(loadToyUnlocks);
-    if (loadItems) loadItems = JSON.parse(loadItems);
-    if (loadCats) loadCats = JSON.parse(loadCats);
+const DB_NAME = "gameDB";
+const STORE_NAME = "save";
 
-    const loadPlayed = localStorage.getItem('played');
-
-    const data: SaveData = {
-        toyUnlocks: loadToyUnlocks || items.filter((item) => !item.stacking).map(() => false),
-        items: loadItems || items.filter((item) => item.stacking).map(() => 0),
-        cats: loadCats || [],
-        catsEaten: Number(localStorage.getItem('catsEaten')) || 0,
-        catsSouls: Number(localStorage.getItem('catsSouls')) || 0,
-        vol1: Number(localStorage.getItem('vol1') || 50),
-        vol2: Number(localStorage.getItem('vol2') || 50),
-        itemDrag: null,
-        played: loadPlayed === 'true'
-    };
-
-    return data;
+function openDB(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+            (e.target as IDBOpenDBRequest).result.createObjectStore(STORE_NAME);
+        };
+        req.onsuccess = (e) => resolve((e.target as IDBOpenDBRequest).result);
+        req.onerror = (e) => reject((e.target as IDBOpenDBRequest).error);
+    });
 }
 
+function getField(db: IDBDatabase, key: string): Promise<string | null> {
+    return new Promise((resolve, reject) => {
+        const req = db.transaction(STORE_NAME).objectStore(STORE_NAME).get(key);
+        req.onsuccess = (e) => resolve((e.target as IDBRequest).result ?? null);
+        req.onerror = (e) => reject((e.target as IDBRequest).error);
+    });
+}
+
+export function saveField(key: string, value: string): Promise<void> {
+    return openDB().then((db) => new Promise((resolve, reject) => {
+        const req = db.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).put(value, key);
+        req.onsuccess = () => resolve();
+        req.onerror = (e) => reject((e.target as IDBRequest).error);
+    }));
+}
+
+export async function loadData(): Promise<SaveData> {
+    const db = await openDB();
+    const get = (key: string) => getField(db, key);
+
+    const [rawToyUnlocks, rawItems, rawCats, catsEaten, catsSouls, vol1, vol2, played] = await Promise.all([
+        get("toyUnlocks"), get("items"), get("cats"),
+        get("catsEaten"), get("catsSouls"), get("vol1"), get("vol2"), get("played"),
+    ]);
+
+    return {
+        toyUnlocks: rawToyUnlocks ? JSON.parse(rawToyUnlocks) : items.filter((i) => !i.stacking).map(() => false),
+        items: rawItems ? JSON.parse(rawItems) : items.filter((i) => i.stacking).map(() => 0),
+        cats: rawCats ? JSON.parse(rawCats) : [],
+        catsEaten: Number(catsEaten) || 0,
+        catsSouls: Number(catsSouls) || 0,
+        vol1: Number(vol1 ?? 50),
+        vol2: Number(vol2 ?? 50),
+        itemDrag: null,
+        played: played === "true",
+    };
+}

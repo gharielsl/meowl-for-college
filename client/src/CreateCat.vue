@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Button from './Button.vue';
-import cats from './cats';
-import saveData from './save-data.ts';
+import cats from './cats.ts';
+import { saveData } from './save-data.ts';
 
 const btnHovered = ref(false);
 

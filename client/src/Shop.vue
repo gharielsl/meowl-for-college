@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import saveData from './save-data';
+import { saveData } from './save-data';
 import items from './items';
 import { formatNumber } from './util';
 

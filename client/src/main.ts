@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import './main.css';
 import App from './App.vue';
+import { initStore } from './save-data.ts';
 
-createApp(App).mount('#root');
+initStore().then(() => createApp(App).mount('#root'));

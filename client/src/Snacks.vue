@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import items from './items';
-import saveData from './save-data';
+import { saveData } from './save-data';
 
 const scrollContainer = ref<HTMLElement | null>(null);
 const thumbHeight = ref(0);

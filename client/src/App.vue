@@ -5,7 +5,7 @@ import Button from './Button.vue';
 import Snacks from './Snacks.vue';
 import Options from './Options.vue';
 import Shop from './Shop.vue';
-import saveData from './save-data.ts';
+import { saveData } from './save-data.ts';
 import { formatNumber } from './util.ts';
 import Talk from './Talk.vue';
 

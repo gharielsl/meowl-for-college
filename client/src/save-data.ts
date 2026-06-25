@@ -1,19 +1,21 @@
 import { reactive, watch } from "vue";
-import { loadData } from "./util";
+import { loadData, saveField } from "./util";
 
-// global state
-const data: SaveData = reactive(loadData());
+export const saveData = reactive<SaveData>({} as SaveData);
 
-// store fields on change
-watch(data, (newData) => {
-    localStorage.setItem('toyUnlocks', JSON.stringify(newData.toyUnlocks));
-    localStorage.setItem('items', JSON.stringify(newData.items));
-    localStorage.setItem('cats', JSON.stringify(newData.cats));
-    localStorage.setItem('catsEaten', String(newData.catsEaten));
-    localStorage.setItem('catsSouls', String(newData.catsSouls));
-    localStorage.setItem('vol1', String(newData.vol1));
-    localStorage.setItem('vol2', String(newData.vol2));
-    localStorage.setItem('played', newData.played);
-}, { deep: true });
-
-export default data;
+export async function initStore() {
+    const saved = await loadData();
+    Object.assign(saveData, saved);
+    watch(saveData, async (newData) => {
+        await Promise.all([
+            saveField("toyUnlocks", JSON.stringify(newData.toyUnlocks)),
+            saveField("items", JSON.stringify(newData.items)),
+            saveField("cats", JSON.stringify(newData.cats)),
+            saveField("catsEaten", String(newData.catsEaten)),
+            saveField("catsSouls", String(newData.catsSouls)),
+            saveField("vol1", String(newData.vol1)),
+            saveField("vol2", String(newData.vol2)),
+            saveField("played", String(newData.played)),
+        ]);
+    }, { deep: true });
+}

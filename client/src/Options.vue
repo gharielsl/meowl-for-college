@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch } from 'vue';
-import saveData from './save-data';
+import { saveData } from './save-data';
 
 const props = defineProps<{
     onClose?: () => void;
