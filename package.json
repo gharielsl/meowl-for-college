@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"./.venv/bin/python -u ./server/app.py\" --names \"vite,python\" --prefix-colors \"blue,green\"",
-    "build": "pip install -r requirements.txt && vite build",
-    "start": "python3 ./server/app.py",
+    "build": "python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt && vite build",
+    "start": "./.venv/bin/python ./server/app.py",
     "clean": "rm -rf dist"
   },
   "dependencies": {
