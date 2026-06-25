@@ -17,7 +17,6 @@ app = FastAPI()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIST_PATH = os.path.join(BASE_DIR, "dist")
-DIST_PATH = os.path.join(BASE_DIR, "dist")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 ENV = os.environ.get("ENV")
 
@@ -98,7 +97,11 @@ async def chat(req: ChatRequest):
 
 
 if ENV == "production" and os.path.isdir(DIST_PATH):
-    app.mount("/", StaticFiles(directory=DIST_PATH), name="dist")
+    app.mount(
+        "/",
+        StaticFiles(directory=DIST_PATH, html=True),
+        name="dist",
+    )
 
 
 if __name__ == "__main__":
