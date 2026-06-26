@@ -31,7 +31,7 @@ if ENV != "production":
     )
 
 
-client = Groq(api_key=os.environ.get(GROQ_API_KEY))
+client = Groq(api_key=GROQ_API_KEY)
 
 
 class HistoryMessage(BaseModel):
@@ -47,7 +47,6 @@ class ChatRequest(BaseModel):
 
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
-    print(req)
     if not req.name or not req.message:
         raise HTTPException(status_code=400, detail="Cat name and message are required.")
 
@@ -56,11 +55,13 @@ async def chat(req: ChatRequest):
         {
             "role": "system",
             "content": (
-                "You are a talking cat speaking to your caretaker owner. "
+                f"Your name is {req.name}. "
+                "You are a talking cat speaking to your owner. "
+                "You might get eaten, might not. "
                 "Keep your response in character. "
                 "Respond ONLY with a JSON object with two fields: "
                 '"response" (string): your response as a cat and '
-                '"happiness" (integer 0-10): how much you like your owners message.'
+                '"happiness" (integer 0-10): how much you like your owner based on the last message. '
             ),
         }
     ]
@@ -73,7 +74,7 @@ async def chat(req: ChatRequest):
 
     llm_messages.append({
         "role": "user",
-        "content": f'you are a cat that might get eaten, your name is: "{req.name}", owner sends you this message: "{req.message}"',
+        "content": req.message,
     })
 
     try:
@@ -110,5 +111,4 @@ if ENV == "production" and os.path.isdir(DIST_PATH):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
-    is_dev = ENV != "production"
-    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=is_dev)
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=ENV != "production")
