@@ -1,10 +1,9 @@
 import os
 import json
-import random
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from groq import Groq
 from dotenv import load_dotenv
 import uvicorn
@@ -19,6 +18,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIST_PATH = os.path.join(BASE_DIR, "dist")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 ENV = os.environ.get("ENV")
+MAX_CHAT_HISTORY = 3
 
 
 if ENV != "production":
@@ -32,50 +32,54 @@ if ENV != "production":
 
 
 client = Groq(api_key=os.environ.get(GROQ_API_KEY))
-USE_REAL_AI = True
 
-FAKE_RESPONSES = [
-    {"response": "Meow? Please don't cook me! I'll be the best kitty ever! 😿", "happiness": 8},
-    {"response": "Hiss! If you try to eat me, I will scratch all your furniture! 😾", "happiness": 1},
-    {"response": "Purrrr... standard master massage received. Please feed me fish instead of thinking of me as soup! 🐟", "happiness": 9},
-    {"response": "Meow, you look hungry... Should I start running?! 🙀", "happiness": 3},
-    {"response": "I am way too adorable to be on a plate! Look at my cozy eyes! 🥺", "happiness": 7},
-    {"response": "A cat eater? Purr... I will just take a nap and dream you're a vegetarian. 🐾", "happiness": 5},
-    {"response": "Meowww! I contain 99% fluff and 1% salt. Not tasty at all! 🐱", "happiness": 6},
-]
+
+class HistoryMessage(BaseModel):
+    sender: str
+    text: str
+
 
 class ChatRequest(BaseModel):
     name: str
     message: str
+    history: list[HistoryMessage] = Field(default_factory=list)
 
 
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
+    print(req)
     if not req.name or not req.message:
         raise HTTPException(status_code=400, detail="Cat name and message are required.")
 
-    if not USE_REAL_AI:
-        return random.choice(FAKE_RESPONSES)
 
-    prompt = f'you are a cat that might get eaten, your name is: "{req.name}", owner sends you this message: "{req.message}"'
+    llm_messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are a talking cat speaking to your caretaker owner. "
+                "Keep your response in character. "
+                "Respond ONLY with a JSON object with two fields: "
+                '"response" (string): your response as a cat and '
+                '"happiness" (integer 0-10): how much you like your owners message.'
+            ),
+        }
+    ]
+
+    for msg in req.history[-MAX_CHAT_HISTORY:]:
+        llm_messages.append({
+            "role": "assistant" if msg.sender == "cat" else "user",
+            "content": msg.text,
+        })
+
+    llm_messages.append({
+        "role": "user",
+        "content": f'you are a cat that might get eaten, your name is: "{req.name}", owner sends you this message: "{req.message}"',
+    })
 
     try:
         completion = client.chat.completions.create(
             model="llama-3.1-8b-instant",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a talking cat speaking to your caretaker owner. "
-                        "Keep your response in character. "
-                        "Respond ONLY with a JSON object with two fields: "
-                        '"response" (string, your reply as a cat) and '
-                        '"happiness" (integer 0-10, how much you liked the message). '
-                        "No markdown, no extra text."
-                    ),
-                },
-                {"role": "user", "content": prompt},
-            ],
+            messages=llm_messages,
         )
 
         text = completion.choices[0].message.content

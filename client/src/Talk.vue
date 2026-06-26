@@ -29,6 +29,7 @@ const messages = ref<ChatMessage[]>(
 const userInput = ref('');
 const isLoading = ref(false);
 const chatHistoryRef = ref<HTMLDivElement | null>(null);
+const inputEl = ref<HTMLInputElement | null>(null);
 
 function scrollToBottom() {
     nextTick(() => {
@@ -70,7 +71,8 @@ async function sendMessage() {
             },
             body: JSON.stringify({
                 name: props.cat.name,
-                message: text
+                message: text,
+                history: messages.value
             })
         });
 
@@ -134,6 +136,7 @@ async function sendMessage() {
     } finally {
         isLoading.value = false;
         scrollToBottom();
+        nextTick().then(() => inputEl.value?.focus());
     }
 }
 </script>
@@ -181,6 +184,7 @@ async function sendMessage() {
 
         <form @submit.prevent="sendMessage" class="chat-input-area">
             <input 
+                ref="inputEl"
                 v-model="userInput" 
                 placeholder="Say something nice to the cat..." 
                 class="talk-input" 

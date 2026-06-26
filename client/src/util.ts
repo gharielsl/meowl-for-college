@@ -60,3 +60,9 @@ export async function loadData(): Promise<SaveData> {
         played: played === "true",
     };
 }
+
+export async function deleteData() {
+    const db = await openDB();
+    db.close();
+    indexedDB.deleteDatabase(DB_NAME);
+}

@@ -6,7 +6,7 @@ import Snacks from './Snacks.vue';
 import Options from './Options.vue';
 import Shop from './Shop.vue';
 import { saveData } from './save-data.ts';
-import { formatNumber } from './util.ts';
+import { deleteData, formatNumber } from './util.ts';
 import Talk from './Talk.vue';
 
 const MODE_CREATE = 0;
@@ -248,8 +248,8 @@ function exit() {
   bgSound.value.pause();
 }
 
-function reset() {
-  localStorage.clear();
+async function reset() {
+  await deleteData()
   window.location.reload();
 }
 </script>
